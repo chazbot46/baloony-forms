@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report abuse form</title>
+    <link rel="stylesheet" href="./idsk-frontend.min.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Source Sans Pro", "Arial", sans-serif;
+        background: transparent;
+      }
+
+      .embed-form-shell {
+        max-width: 720px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="embed-form-shell">
+      <form id="report-abuse-form" class="govuk-!-margin-bottom-0" aria-describedby="report-abuse-hint">
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="reporting-type">
+            What are you reporting?
+          </label>
+          <div id="report-abuse-hint" class="govuk-hint">
+            Select one option to continue.
+          </div>
+          <select class="govuk-select" id="reporting-type" name="reportingType" required>
+            <option value="">Choose one option</option>
+            <option value="short-link">Short-link</option>
+            <option value="baloony-domain">Website that uses the baloony.xyz domain</option>
+            <option value="other-abuse">Other types of domain abuse</option>
+          </select>
+        </div>
+
+        <div class="govuk-form-group" id="short-link-url-group" hidden>
+          <label class="govuk-label" for="short-link-url">
+            Paste here the short link you are reporting
+          </label>
+          <input
+            class="govuk-input"
+            id="short-link-url"
+            name="shortLinkUrl"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="govuk-form-group" id="domain-url-group" hidden>
+          <label class="govuk-label" for="domain-url">
+            URL of the abusive website
+          </label>
+          <input
+            class="govuk-input"
+            id="domain-url"
+            name="domainUrl"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="govuk-form-group" id="reason-group" hidden>
+          <label class="govuk-label" for="reason">
+            Reason for reporting
+          </label>
+          <textarea
+            class="govuk-textarea"
+            id="reason"
+            name="reason"
+            rows="6"
+            spellcheck="true"
+          ></textarea>
+        </div>
+
+        <div class="govuk-form-group" id="details-group" hidden>
+          <label class="govuk-label" for="details">
+            Details
+          </label>
+          <textarea
+            class="govuk-textarea"
+            id="details"
+            name="details"
+            rows="6"
+            spellcheck="true"
+          ></textarea>
+        </div>
+
+        <button class="govuk-button" data-module="govuk-button" type="submit">
+          Submit report
+        </button>
+      </form>
+    </div>
+
+    <script>
+      const reportingTypeSelect = document.getElementById('reporting-type');
+      const shortLinkUrlGroup = document.getElementById('short-link-url-group');
+      const domainUrlGroup = document.getElementById('domain-url-group');
+      const reasonGroup = document.getElementById('reason-group');
+      const detailsGroup = document.getElementById('details-group');
+
+      const shortLinkUrlInput = document.getElementById('short-link-url');
+      const domainUrlInput = document.getElementById('domain-url');
+      const reasonInput = document.getElementById('reason');
+      const detailsInput = document.getElementById('details');
+
+      function setVisibility(group, visible, input) {
+        group.hidden = !visible;
+        input.required = visible;
+        if (!visible) {
+          input.value = '';
+        }
+      }
+
+      function updateFormVisibility() {
+        const selectedType = reportingTypeSelect.value;
+
+        const isShortLink = selectedType === 'short-link';
+        const isBaloonyDomain = selectedType === 'baloony-domain';
+        const isOtherAbuse = selectedType === 'other-abuse';
+
+        setVisibility(shortLinkUrlGroup, isShortLink, shortLinkUrlInput);
+        setVisibility(domainUrlGroup, isBaloonyDomain, domainUrlInput);
+        setVisibility(reasonGroup, isShortLink || isBaloonyDomain, reasonInput);
+        setVisibility(detailsGroup, isOtherAbuse, detailsInput);
+      }
+
+      reportingTypeSelect.addEventListener('change', updateFormVisibility);
+      updateFormVisibility();
+    </script>
+  </body>
+</html>
