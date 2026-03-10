@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report abuse form</title>
+    <link rel="stylesheet" href="./idsk-frontend.min.css" />
+    <style>
+      body {
+        margin: 0;
+        font-family: "Source Sans Pro", "Arial", sans-serif;
+        background: transparent;
+      }
+
+      .embed-form-shell {
+        max-width: 720px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="embed-form-shell">
+      <form
+        id="report-abuse-form"
+        class="govuk-!-margin-bottom-0"
+        aria-describedby="report-abuse-hint"
+        onsubmit="return false;"
+      >
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="reporting-type">
+            What are you reporting?
+          </label>
+          <div id="report-abuse-hint" class="govuk-hint">
+            Select one option to continue.
+          </div>
+          <select class="govuk-select" id="reporting-type" name="reportingType" required>
+            <option value="">Choose one option</option>
+            <option value="short-link">Short-link</option>
+            <option value="baloony-domain">Website that uses the baloony.xyz domain</option>
+            <option value="other-abuse">Other types of domain abuse</option>
+          </select>
+        </div>
+
+        <div class="govuk-form-group" id="short-link-url-group" hidden>
+          <label class="govuk-label" for="short-link-url">
+            Paste here the short link you are reporting
+          </label>
+          <input
+            class="govuk-input"
+            id="short-link-url"
+            name="shortLinkUrl"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="govuk-form-group" id="domain-url-group" hidden>
+          <label class="govuk-label" for="domain-url">
+            URL of the abusive website
+          </label>
+          <input
+            class="govuk-input"
+            id="domain-url"
+            name="domainUrl"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="govuk-form-group" id="reason-group" hidden>
+          <label class="govuk-label" for="reason">
+            Reason for reporting
+          </label>
+          <textarea class="govuk-textarea" id="reason" name="reason" rows="6" spellcheck="true"></textarea>
+        </div>
+
+        <div class="govuk-form-group" id="details-group" hidden>
+          <label class="govuk-label" for="details">
+            Details
+          </label>
+          <textarea class="govuk-textarea" id="details" name="details" rows="6" spellcheck="true"></textarea>
+        </div>
+
+        <div id="submission-status" class="govuk-body govuk-!-margin-bottom-4" aria-live="polite"></div>
+
+        <button class="govuk-button" data-module="govuk-button" type="submit" id="submit-button">
+          Submit report
+        </button>
+      </form>
+    </div>
+
+    <script>
+      (function () {
+        const API_BASE_URL = 'https://api.nic.baloony.xyz';
+
+        const reportForm = document.getElementById('report-abuse-form');
+        const reportingTypeSelect = document.getElementById('reporting-type');
+        const shortLinkUrlGroup = document.getElementById('short-link-url-group');
+        const domainUrlGroup = document.getElementById('domain-url-group');
+        const reasonGroup = document.getElementById('reason-group');
+        const detailsGroup = document.getElementById('details-group');
+        const submissionStatus = document.getElementById('submission-status');
+        const submitButton = document.getElementById('submit-button');
+
+        const shortLinkUrlInput = document.getElementById('short-link-url');
+        const domainUrlInput = document.getElementById('domain-url');
+        const reasonInput = document.getElementById('reason');
+        const detailsInput = document.getElementById('details');
+
+        function setVisibility(group, visible, input) {
+          group.hidden = !visible;
+          input.required = visible;
+          if (!visible) {
+            input.value = '';
+          }
+        }
+
+        function setStatus(message, isError) {
+          submissionStatus.textContent = message;
+          submissionStatus.className = isError
+            ? 'govuk-error-message govuk-!-margin-bottom-4'
+            : 'govuk-body govuk-!-margin-bottom-4';
+        }
+
+        function updateFormVisibility() {
+          const selectedType = reportingTypeSelect.value;
+
+          const isShortLink = selectedType === 'short-link';
+          const isBaloonyDomain = selectedType === 'baloony-domain';
+          const isOtherAbuse = selectedType === 'other-abuse';
+
+          setVisibility(shortLinkUrlGroup, isShortLink, shortLinkUrlInput);
+          setVisibility(domainUrlGroup, isBaloonyDomain, domainUrlInput);
+          setVisibility(reasonGroup, isShortLink || isBaloonyDomain, reasonInput);
+          setVisibility(detailsGroup, isOtherAbuse, detailsInput);
+        }
+
+        async function submitAbuseReport(event) {
+          event.preventDefault();
+          setStatus('', false);
+
+          if (!reportForm.checkValidity()) {
+            reportForm.reportValidity();
+            return;
+          }
+
+          const formData = new FormData(reportForm);
+          const payload = {
+            reportingType: String(formData.get('reportingType') || '').trim(),
+            shortLinkUrl: String(formData.get('shortLinkUrl') || '').trim(),
+            domainUrl: String(formData.get('domainUrl') || '').trim(),
+            reason: String(formData.get('reason') || '').trim(),
+            details: String(formData.get('details') || '').trim()
+          };
+
+          submitButton.disabled = true;
+          setStatus('Sending report…', false);
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/requests/report-abuse`, {
+              method: 'POST',
+              mode: 'cors',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            const responseText = await response.text();
+            let data = {};
+            try {
+              data = responseText ? JSON.parse(responseText) : {};
+            } catch (parseError) {
+              data = {};
+            }
+
+            if (!response.ok) {
+              throw new Error(data.error || `Submission failed (${response.status}).`);
+            }
+
+            reportForm.reset();
+            updateFormVisibility();
+            setStatus('Your report was submitted successfully.', false);
+          } catch (error) {
+            setStatus(
+              error && error.message
+                ? error.message
+                : 'Failed to submit report. Please try again.',
+              true
+            );
+          } finally {
+            submitButton.disabled = false;
+          }
+        }
+
+        reportingTypeSelect.addEventListener('change', updateFormVisibility);
+        reportForm.addEventListener('submit', submitAbuseReport);
+        updateFormVisibility();
+      })();
+    </script>
+  </body>
+</html>
