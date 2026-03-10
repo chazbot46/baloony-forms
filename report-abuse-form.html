@@ -91,25 +91,18 @@
           ></textarea>
         </div>
 
-        <div id="submission-status" class="govuk-body govuk-!-margin-bottom-4" aria-live="polite"></div>
-
-        <button class="govuk-button" data-module="govuk-button" type="submit" id="submit-button">
+        <button class="govuk-button" data-module="govuk-button" type="submit">
           Submit report
         </button>
       </form>
     </div>
 
     <script>
-      const API_BASE_URL = 'https://api.nic.baloony.xyz';
-
-      const reportForm = document.getElementById('report-abuse-form');
       const reportingTypeSelect = document.getElementById('reporting-type');
       const shortLinkUrlGroup = document.getElementById('short-link-url-group');
       const domainUrlGroup = document.getElementById('domain-url-group');
       const reasonGroup = document.getElementById('reason-group');
       const detailsGroup = document.getElementById('details-group');
-      const submissionStatus = document.getElementById('submission-status');
-      const submitButton = document.getElementById('submit-button');
 
       const shortLinkUrlInput = document.getElementById('short-link-url');
       const domainUrlInput = document.getElementById('domain-url');
@@ -122,13 +115,6 @@
         if (!visible) {
           input.value = '';
         }
-      }
-
-      function setStatus(message, isError) {
-        submissionStatus.textContent = message;
-        submissionStatus.className = isError
-          ? 'govuk-error-message govuk-!-margin-bottom-4'
-          : 'govuk-body govuk-!-margin-bottom-4';
       }
 
       function updateFormVisibility() {
@@ -144,53 +130,7 @@
         setVisibility(detailsGroup, isOtherAbuse, detailsInput);
       }
 
-      async function submitAbuseReport(event) {
-        event.preventDefault();
-        setStatus('', false);
-
-        const formData = new FormData(reportForm);
-        const payload = {
-          reportingType: formData.get('reportingType') || '',
-          shortLinkUrl: (formData.get('shortLinkUrl') || '').toString().trim(),
-          domainUrl: (formData.get('domainUrl') || '').toString().trim(),
-          reason: (formData.get('reason') || '').toString().trim(),
-          details: (formData.get('details') || '').toString().trim()
-        };
-
-        submitButton.disabled = true;
-
-        try {
-          const response = await fetch(`${API_BASE_URL}/api/requests/report-abuse`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          });
-
-          let data = {};
-          try {
-            data = await response.json();
-          } catch {
-            data = {};
-          }
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to submit report. Please try again.');
-          }
-
-          reportForm.reset();
-          updateFormVisibility();
-          setStatus('Your report was submitted successfully.', false);
-        } catch (error) {
-          setStatus(error.message || 'Failed to submit report. Please try again.', true);
-        } finally {
-          submitButton.disabled = false;
-        }
-      }
-
       reportingTypeSelect.addEventListener('change', updateFormVisibility);
-      reportForm.addEventListener('submit', submitAbuseReport);
       updateFormVisibility();
     </script>
   </body>
