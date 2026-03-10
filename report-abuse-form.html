@@ -1,137 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Report abuse form</title>
-    <link rel="stylesheet" href="./idsk-frontend.min.css" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Abuse - baloony.xyz</title>
+    <link rel="stylesheet" href="https://mirror.itms2014.sk/idsk/2.5.0/idsk-frontend.min.css">
     <style>
-      body {
-        margin: 0;
-        font-family: "Source Sans Pro", "Arial", sans-serif;
-        background: transparent;
-      }
-
-      .embed-form-shell {
-        max-width: 720px;
-      }
+        /* Optimization for iframe embedding */
+        body {
+            background-color: transparent;
+            padding: 15px;
+            font-family: "Source Sans Pro", Arial, sans-serif;
+        }
+        .govuk-main-wrapper {
+            padding-top: 0;
+        }
+        /* Ensure the form takes full width of the iframe container */
+        .govuk-grid-column-full {
+            padding: 0;
+        }
+        /* Style adjustments for better iframe fit */
+        .govuk-button {
+            margin-bottom: 0;
+        }
     </style>
-  </head>
-  <body>
-    <div class="embed-form-shell">
-      <form id="report-abuse-form" class="govuk-!-margin-bottom-0" aria-describedby="report-abuse-hint">
-        <div class="govuk-form-group">
-          <label class="govuk-label govuk-label--m" for="reporting-type">
-            What are you reporting?
-          </label>
-          <div id="report-abuse-hint" class="govuk-hint">
-            Select one option to continue.
-          </div>
-          <select class="govuk-select" id="reporting-type" name="reportingType" required>
-            <option value="">Choose one option</option>
-            <option value="short-link">Short-link</option>
-            <option value="baloony-domain">Website that uses the baloony.xyz domain</option>
-            <option value="other-abuse">Other types of domain abuse</option>
-          </select>
-        </div>
+</head>
+<body class="govuk-template__body">
+    <div class="govuk-width-container">
+        <main class="govuk-main-wrapper" id="main-content" role="main">
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-full">
 
-        <div class="govuk-form-group" id="short-link-url-group" hidden>
-          <label class="govuk-label" for="short-link-url">
-            Paste here the short link you are reporting
-          </label>
-          <input
-            class="govuk-input"
-            id="short-link-url"
-            name="shortLinkUrl"
-            type="url"
-            inputmode="url"
-            autocomplete="off"
-            spellcheck="false"
-          />
-        </div>
+                    <div id="status-container">
+                        <div id="success-banner" class="idsk-panel idsk-panel--confirmation" style="display: none; margin-bottom: 20px;">
+                            <h1 class="idsk-panel__title">Report submitted</h1>
+                            <div class="idsk-panel__body">
+                                Thank you for reporting abuse. We will review your request shortly.
+                            </div>
+                        </div>
 
-        <div class="govuk-form-group" id="domain-url-group" hidden>
-          <label class="govuk-label" for="domain-url">
-            URL of the abusive website
-          </label>
-          <input
-            class="govuk-input"
-            id="domain-url"
-            name="domainUrl"
-            type="url"
-            inputmode="url"
-            autocomplete="off"
-            spellcheck="false"
-          />
-        </div>
+                        <div id="error-summary" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" style="display: none; margin-bottom: 20px;">
+                            <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+                            <div class="govuk-error-summary__body">
+                                <ul class="govuk-list govuk-error-summary__list">
+                                    <li>The form could not be sent. Please try again later or contact support.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
 
-        <div class="govuk-form-group" id="reason-group" hidden>
-          <label class="govuk-label" for="reason">
-            Reason for reporting
-          </label>
-          <textarea
-            class="govuk-textarea"
-            id="reason"
-            name="reason"
-            rows="6"
-            spellcheck="true"
-          ></textarea>
-        </div>
+                    <form id="report-abuse-form" action="https://api.nic.baloony.xyz/api/requests/report-abuse" method="POST">
+                        
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-label--m" for="report-type">
+                                What are you reporting?
+                            </label>
+                            <select class="govuk-select" id="report-type" name="reportType" required style="width: 100%;">
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="short-link">Short-link</option>
+                                <option value="website-baloony">Website that uses the baloony.xyz domain</option>
+                                <option value="other-abuse">Other types of domain abuse</option>
+                            </select>
+                        </div>
 
-        <div class="govuk-form-group" id="details-group" hidden>
-          <label class="govuk-label" for="details">
-            Details
-          </label>
-          <textarea
-            class="govuk-textarea"
-            id="details"
-            name="details"
-            rows="6"
-            spellcheck="true"
-          ></textarea>
-        </div>
+                        <div class="govuk-form-group" id="group-abusive-website" style="display: none;">
+                            <label class="govuk-label" for="abusive-website-url">URL of the abusive website</label>
+                            <input class="govuk-input" id="abusive-website-url" name="abusiveWebsiteUrl" type="url" placeholder="https://example.baloony.xyz">
+                        </div>
 
-        <button class="govuk-button" data-module="govuk-button" type="submit">
-          Submit report
-        </button>
-      </form>
+                        <div class="govuk-form-group" id="group-short-link" style="display: none;">
+                            <label class="govuk-label" for="short-link-url">Paste here the short link you are reporting</label>
+                            <input class="govuk-input" id="short-link-url" name="shortLinkUrl" type="url" placeholder="https://baloony.xyz/abc123">
+                        </div>
+
+                        <div class="govuk-form-group" id="group-reason" style="display: none;">
+                            <label class="govuk-label" for="report-reason">Reason for reporting</label>
+                            <textarea class="govuk-textarea" id="report-reason" name="reportReason" rows="4"></textarea>
+                        </div>
+
+                        <div class="govuk-form-group" id="group-details" style="display: none;">
+                            <label class="govuk-label" for="report-details">Details</label>
+                            <textarea class="govuk-textarea" id="report-details" name="reportDetails" rows="4"></textarea>
+                        </div>
+
+                        <button class="govuk-button" data-module="govuk-button" type="submit">
+                            Submit Report
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </main>
     </div>
 
     <script>
-      const reportingTypeSelect = document.getElementById('reporting-type');
-      const shortLinkUrlGroup = document.getElementById('short-link-url-group');
-      const domainUrlGroup = document.getElementById('domain-url-group');
-      const reasonGroup = document.getElementById('reason-group');
-      const detailsGroup = document.getElementById('details-group');
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById("report-abuse-form");
+            const reportTypeSelect = document.getElementById("report-type");
+            const successBanner = document.getElementById("success-banner");
+            const errorSummary = document.getElementById("error-summary");
 
-      const shortLinkUrlInput = document.getElementById('short-link-url');
-      const domainUrlInput = document.getElementById('domain-url');
-      const reasonInput = document.getElementById('reason');
-      const detailsInput = document.getElementById('details');
+            const groups = {
+                website: document.getElementById("group-abusive-website"),
+                shortlink: document.getElementById("group-short-link"),
+                reason: document.getElementById("group-reason"),
+                details: document.getElementById("group-details")
+            };
 
-      function setVisibility(group, visible, input) {
-        group.hidden = !visible;
-        input.required = visible;
-        if (!visible) {
-          input.value = '';
-        }
-      }
+            // Toggle visibility based on selection
+            reportTypeSelect.addEventListener("change", function() {
+                const val = this.value;
+                Object.values(groups).forEach(g => g.style.display = "none");
 
-      function updateFormVisibility() {
-        const selectedType = reportingTypeSelect.value;
+                if (val === "short-link") {
+                    groups.shortlink.style.display = "block";
+                    groups.reason.style.display = "block";
+                } else if (val === "website-baloony") {
+                    groups.website.style.display = "block";
+                    groups.reason.style.display = "block";
+                } else if (val === "other-abuse") {
+                    groups.details.style.display = "block";
+                }
+            });
 
-        const isShortLink = selectedType === 'short-link';
-        const isBaloonyDomain = selectedType === 'baloony-domain';
-        const isOtherAbuse = selectedType === 'other-abuse';
+            // Handle API submission
+            form.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                
+                successBanner.style.display = "none";
+                errorSummary.style.display = "none";
 
-        setVisibility(shortLinkUrlGroup, isShortLink, shortLinkUrlInput);
-        setVisibility(domainUrlGroup, isBaloonyDomain, domainUrlInput);
-        setVisibility(reasonGroup, isShortLink || isBaloonyDomain, reasonInput);
-        setVisibility(detailsGroup, isOtherAbuse, detailsInput);
-      }
+                const submitBtn = form.querySelector('button');
+                const reportType = reportTypeSelect.value;
 
-      reportingTypeSelect.addEventListener('change', updateFormVisibility);
-      updateFormVisibility();
+                const payload = { reportType };
+                if (reportType === "short-link") {
+                    payload.shortLinkUrl = document.getElementById("short-link-url").value;
+                    payload.reportReason = document.getElementById("report-reason").value;
+                } else if (reportType === "website-baloony") {
+                    payload.abusiveWebsiteUrl = document.getElementById("abusive-website-url").value;
+                    payload.reportReason = document.getElementById("report-reason").value;
+                } else if (reportType === "other-abuse") {
+                    payload.reportDetails = document.getElementById("report-details").value;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Sending...";
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error();
+
+                    successBanner.style.display = "block";
+                    form.reset();
+                    reportTypeSelect.dispatchEvent(new Event("change"));
+                    window.scrollTo(0, 0);
+
+                } catch (err) {
+                    errorSummary.style.display = "block";
+                    window.scrollTo(0, 0);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Submit Report";
+                }
+            });
+        });
     </script>
-  </body>
+</body>
 </html>
