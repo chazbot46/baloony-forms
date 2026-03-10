@@ -39,29 +39,59 @@
           <label class="govuk-label" for="short-link-url">
             Paste here the short link you are reporting
           </label>
-          <input class="govuk-input" id="short-link-url" name="shortLinkUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" />
+          <input
+            class="govuk-input"
+            id="short-link-url"
+            name="shortLinkUrl"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            spellcheck="false"
+          />
         </div>
 
         <div class="govuk-form-group" id="domain-url-group" hidden>
           <label class="govuk-label" for="domain-url">
             URL of the abusive website
           </label>
-          <input class="govuk-input" id="domain-url" name="domainUrl" type="url" inputmode="url" autocomplete="off" spellcheck="false" />
+          <input
+            class="govuk-input"
+            id="domain-url"
+            name="domainUrl"
+            type="url"
+            inputmode="url"
+            autocomplete="off"
+            spellcheck="false"
+          />
         </div>
 
         <div class="govuk-form-group" id="reason-group" hidden>
-          <label class="govuk-label" for="reason"> Reason for reporting </label>
-          <textarea class="govuk-textarea" id="reason" name="reason" rows="6" spellcheck="true"></textarea>
+          <label class="govuk-label" for="reason">
+            Reason for reporting
+          </label>
+          <textarea
+            class="govuk-textarea"
+            id="reason"
+            name="reason"
+            rows="6"
+            spellcheck="true"
+          ></textarea>
         </div>
 
         <div class="govuk-form-group" id="details-group" hidden>
-          <label class="govuk-label" for="details"> Details </label>
-          <textarea class="govuk-textarea" id="details" name="details" rows="6" spellcheck="true"></textarea>
+          <label class="govuk-label" for="details">
+            Details
+          </label>
+          <textarea
+            class="govuk-textarea"
+            id="details"
+            name="details"
+            rows="6"
+            spellcheck="true"
+          ></textarea>
         </div>
 
-        <div id="submission-status" class="govuk-body govuk-!-margin-bottom-4" aria-live="polite"></div>
-
-        <button class="govuk-button" data-module="govuk-button" type="submit" id="submit-button">
+        <button class="govuk-button" data-module="govuk-button" type="submit">
           Submit report
         </button>
       </form>
@@ -73,12 +103,11 @@
       const domainUrlGroup = document.getElementById('domain-url-group');
       const reasonGroup = document.getElementById('reason-group');
       const detailsGroup = document.getElementById('details-group');
+
       const shortLinkUrlInput = document.getElementById('short-link-url');
       const domainUrlInput = document.getElementById('domain-url');
       const reasonInput = document.getElementById('reason');
       const detailsInput = document.getElementById('details');
-      const submissionStatus = document.getElementById('submission-status');
-      const submitButton = document.getElementById('submit-button');
 
       function setVisibility(group, visible, input) {
         group.hidden = !visible;
@@ -88,15 +117,9 @@
         }
       }
 
-      function setStatus(message, isError) {
-        submissionStatus.textContent = message;
-        submissionStatus.className = isError
-          ? 'govuk-error-message govuk-!-margin-bottom-4'
-          : 'govuk-body govuk-!-margin-bottom-4';
-      }
-
       function updateFormVisibility() {
         const selectedType = reportingTypeSelect.value;
+
         const isShortLink = selectedType === 'short-link';
         const isBaloonyDomain = selectedType === 'baloony-domain';
         const isOtherAbuse = selectedType === 'other-abuse';
@@ -106,48 +129,6 @@
         setVisibility(reasonGroup, isShortLink || isBaloonyDomain, reasonInput);
         setVisibility(detailsGroup, isOtherAbuse, detailsInput);
       }
-
-      document.getElementById('report-abuse-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const form = e.target;
-        if (!form.checkValidity()) {
-          form.reportValidity();
-          return;
-        }
-
-        const body = {
-          reportingType: form.reportingType.value,
-          shortLinkUrl: form.shortLinkUrl.value,
-          domainUrl: form.domainUrl.value,
-          reason: form.reason.value,
-          details: form.details.value,
-        };
-
-        submitButton.disabled = true;
-        setStatus('Sending report…', false);
-
-        try {
-          const res = await fetch('https://api.nic.baloony.xyz/api/requests/report-abuse', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-
-          const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data.error || 'Failed to submit report.');
-          }
-
-          form.reset();
-          updateFormVisibility();
-          setStatus('Your report was submitted successfully.', false);
-        } catch (error) {
-          setStatus(error.message || 'Failed to submit report.', true);
-        } finally {
-          submitButton.disabled = false;
-        }
-      });
 
       reportingTypeSelect.addEventListener('change', updateFormVisibility);
       updateFormVisibility();
