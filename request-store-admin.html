@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Store Admin Access - baloony.xyz</title>
+    <link rel="stylesheet" href="idsk-frontend.min.css">
+    <style>
+        body {
+            background-color: transparent;
+            padding: 15px;
+            font-family: "Source Sans Pro", Arial, sans-serif;
+        }
+        .govuk-main-wrapper {
+            padding-top: 0;
+        }
+        .govuk-grid-column-full {
+            padding: 0;
+        }
+        .govuk-button {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body class="govuk-template__body">
+    <div class="govuk-width-container">
+        <main class="govuk-main-wrapper" id="main-content" role="main">
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-full">
+
+                    <div id="status-container">
+                        <div id="success-banner" class="idsk-panel idsk-panel--confirmation" style="display: none; margin-bottom: 20px;">
+                            <h1 class="idsk-panel__title">Request submitted</h1>
+                            <div class="idsk-panel__body">
+                                Your request for Store Admin access has been submitted. We will review it shortly.
+                            </div>
+                        </div>
+
+                        <div id="error-summary" class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" style="display: none; margin-bottom: 20px;">
+                            <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+                            <div class="govuk-error-summary__body">
+                                <ul class="govuk-list govuk-error-summary__list">
+                                    <li id="error-message-text">The form could not be sent. Please try again later or contact support.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div id="login-warning" class="govuk-warning-text" style="display: none; margin-bottom: 20px;">
+                            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                            <strong class="govuk-warning-text__text">
+                                <span class="govuk-warning-text__assistive">Warning</span>
+                                You must be logged in with Discord to submit this form.
+                            </strong>
+                        </div>
+                    </div>
+
+                    <form id="store-admin-form" novalidate>
+
+                        <div class="govuk-form-group" id="group-email">
+                            <label class="govuk-label govuk-label--m" for="request-email">
+                                E-mail
+                            </label>
+                            <div id="request-email-hint" class="govuk-hint">
+                                Enter the e-mail address associated with your request.
+                            </div>
+                            <input class="govuk-input" id="request-email" name="requestEmail" type="email" autocomplete="email" aria-describedby="request-email-hint">
+                        </div>
+
+                        <div class="govuk-form-group" id="group-access-type">
+                            <fieldset class="govuk-fieldset">
+                                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                                    <h2 class="govuk-fieldset__heading">
+                                        Which type of access are you requesting?
+                                    </h2>
+                                </legend>
+                                <div class="govuk-radios" id="access-type-radios">
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-super-admin" name="accessType" type="radio" value="super-admin">
+                                        <label class="govuk-label govuk-radios__label" for="access-super-admin">Super Admin</label>
+                                    </div>
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-manager" name="accessType" type="radio" value="manager">
+                                        <label class="govuk-label govuk-radios__label" for="access-manager">Manager</label>
+                                    </div>
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-customer-support" name="accessType" type="radio" value="customer-support">
+                                        <label class="govuk-label govuk-radios__label" for="access-customer-support">Customer Support</label>
+                                    </div>
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-production-ops" name="accessType" type="radio" value="production-ops-support">
+                                        <label class="govuk-label govuk-radios__label" for="access-production-ops">Production Ops Support</label>
+                                    </div>
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-fulfillment" name="accessType" type="radio" value="fulfillment-support">
+                                        <label class="govuk-label govuk-radios__label" for="access-fulfillment">Fulfillment Support</label>
+                                    </div>
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-designer" name="accessType" type="radio" value="designer">
+                                        <label class="govuk-label govuk-radios__label" for="access-designer">Designer</label>
+                                    </div>
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-membership-mod" name="accessType" type="radio" value="membership-moderator">
+                                        <label class="govuk-label govuk-radios__label" for="access-membership-mod">Membership Moderator</label>
+                                    </div>
+                                    <div class="govuk-radios__item">
+                                        <input class="govuk-radios__input" id="access-thankyou-sender" name="accessType" type="radio" value="thank-you-note-sender">
+                                        <label class="govuk-label govuk-radios__label" for="access-thankyou-sender">Thank you note sender</label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </div>
+
+                        <button class="govuk-button" data-module="govuk-button" type="submit" id="submit-btn">
+                            Submit Request
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const form = document.getElementById("store-admin-form");
+            const successBanner = document.getElementById("success-banner");
+            const errorSummary = document.getElementById("error-summary");
+            const errorMessageText = document.getElementById("error-message-text");
+            const loginWarning = document.getElementById("login-warning");
+            const submitBtn = document.getElementById("submit-btn");
+
+            // Check login state on load
+            let loggedIn = false;
+            try {
+                const meRes = await fetch("https://api.nic.baloony.xyz/api/me", { credentials: "include" });
+                const meData = await meRes.json();
+                loggedIn = !!meData.loggedIn;
+            } catch {
+                // silently fail, will be caught on submit
+            }
+
+            if (!loggedIn) {
+                loginWarning.style.display = "block";
+                submitBtn.disabled = true;
+            }
+
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                successBanner.style.display = "none";
+                errorSummary.style.display = "none";
+                loginWarning.style.display = "none";
+
+                // Re-verify login on submit
+                try {
+                    const meRes = await fetch("https://api.nic.baloony.xyz/api/me", { credentials: "include" });
+                    const meData = await meRes.json();
+                    if (!meData.loggedIn) {
+                        loginWarning.style.display = "block";
+                        submitBtn.disabled = true;
+                        window.scrollTo(0, 0);
+                        return;
+                    }
+                } catch {
+                    errorMessageText.textContent = "Could not verify login status. Please try again.";
+                    errorSummary.style.display = "block";
+                    window.scrollTo(0, 0);
+                    return;
+                }
+
+                const email = document.getElementById("request-email").value.trim();
+                const accessType = document.querySelector('input[name="accessType"]:checked');
+
+                // Client-side validation
+                const emailGroup = document.getElementById("group-email");
+                const accessGroup = document.getElementById("group-access-type");
+                emailGroup.classList.remove("govuk-form-group--error");
+                document.getElementById("request-email").classList.remove("govuk-input--error");
+                accessGroup.classList.remove("govuk-form-group--error");
+
+                if (!email || !accessType) {
+                    if (!email) {
+                        emailGroup.classList.add("govuk-form-group--error");
+                        document.getElementById("request-email").classList.add("govuk-input--error");
+                    }
+                    if (!accessType) {
+                        accessGroup.classList.add("govuk-form-group--error");
+                    }
+                    errorMessageText.textContent = "Please fill in all required fields.";
+                    errorSummary.style.display = "block";
+                    window.scrollTo(0, 0);
+                    return;
+                }
+
+                const payload = {
+                    requestEmail: email,
+                    accessType: accessType.value
+                };
+
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Sending...";
+
+                try {
+                    const response = await fetch("https://api.nic.baloony.xyz/api/requests/store-admin-access", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        const data = await response.json().catch(() => ({}));
+                        errorMessageText.textContent = data.error || "The form could not be sent. Please try again later or contact support.";
+                        throw new Error();
+                    }
+
+                    successBanner.style.display = "block";
+                    form.reset();
+                    window.scrollTo(0, 0);
+
+                } catch (err) {
+                    errorSummary.style.display = "block";
+                    window.scrollTo(0, 0);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Submit Request";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
